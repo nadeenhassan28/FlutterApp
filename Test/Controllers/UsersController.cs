@@ -5,7 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Test.DTO;
 using Test.Models;
+using Test.Repositories.Abstract;
+using Test.Services.Abstract;
 using WebApi.Models;
 
 namespace Test.Controllers
@@ -15,94 +18,81 @@ namespace Test.Controllers
     public class UsersController : ControllerBase
     {
         private readonly ApiDbContext _context;
+        private readonly IUserRepository _userRepository;
+        private readonly IUserService _userService;
 
-        public UsersController(ApiDbContext context)
+        public UsersController(ApiDbContext context, IUserRepository userRepository, IUserService userService)
         {
             _context = context;
+            _userRepository = userRepository;
+            _userService = userService;
         }
 
         // GET: api/Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Users>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            return await _context.Users.ToListAsync();
+            var result =  await _userService.GetUsers();
+            if (!result.Success)
+            {
+                return NotFound(result);
+            }
+            return Ok(result);
         }
 
         // GET: api/Users/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Users>> GetUsers(int id)
+        public async Task<ActionResult<User>> GetUsers(int id)
         {
-            var users = await _context.Users.FindAsync(id);
+            var result = await _userService.GetUserById(id);
 
-            if (users == null)
+            if (!result.Success)
             {
-                return NotFound();
+                return NotFound(result);
             }
 
-            return users;
+            return Ok(result);
         }
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUsers(int id, Users users)
+        [HttpPut("update")]
+        public async Task<IActionResult> PutUsers(User user)
         {
-            if (id != users.userId)
+            var result = await _userService.UpdateUser(user);
+            if (!result.Success)
             {
-                return BadRequest();
+                return BadRequest(result);
             }
+            return Ok(result);
 
-            _context.Entry(users).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UsersExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
         }
 
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Users>> PostUsers(Users users)
-        {
-            _context.Users.Add(users);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetUsers", new { id = users.userId }, users);
+        public async Task<ActionResult<User>> PostUsers(UserWriteDTO users)
+        {  
+           var result = await _userService.AddUser(users);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
         }
 
         // DELETE: api/Users/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUsers(int id)
         {
-            var users = await _context.Users.FindAsync(id);
-            if (users == null)
+           var result = await _userService.DeleteUser(id);
+            if (!result.Success)
             {
-                return NotFound();
+                return NotFound(result);
             }
-
-            _context.Users.Remove(users);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return Ok(result);
         }
         
-        private bool UsersExists(int id)
-        {
-            return _context.Users.Any(e => e.userId == id);
-        }
+        
     }
 }

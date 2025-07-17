@@ -1,5 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Test.Models;
+using Test.Repositories.Abstract;
+using Test.Repositories.Implementation;
+using Test.Services.Abstract;
+using Test.Services.Implementation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +17,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApiDbContext>(option =>
 option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService , UserService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
