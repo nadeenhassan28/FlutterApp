@@ -11,4 +11,5 @@ public interface IUserService
     Task<Response> GetUserById(int id);
     Task<Response> GetUsers();
     Task<Response> UpdateUser(User user);
+    Task<Response> Login(UserLoginDTO loginDto);
 }

@@ -92,7 +92,17 @@ namespace Test.Controllers
             }
             return Ok(result);
         }
-        
-        
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] UserLoginDTO loginDto)
+        {
+            var result = await _userService.Login(loginDto);
+            if (!result.Success)
+                return Unauthorized(result);
+
+            return Ok(result);
+        }
+
+
     }
 }

@@ -45,6 +45,14 @@ public class UserService: IUserService
         return new Response(true, "User added successfully", new { user, token });
 
     }
+    public async Task<Response> Login(UserLoginDTO userloginDTO)
+    {
+        var user = await _userRepository.Login(userloginDTO.Username, userloginDTO.Password);
+        if (user == null)
+            return new Response(false, "Invalid username or password");
+        var token = GenerateJWT(user);
+        return new Response(true, "Login successful", new { user, token });
+    }
     public async Task<Response> UpdateUser(User user)
     {
         if (user == null)
@@ -92,3 +100,4 @@ public class UserService: IUserService
     }
 
 }
+
