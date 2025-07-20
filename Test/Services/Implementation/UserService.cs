@@ -8,16 +8,17 @@ using Test.Models;
 using Test.Repositories.Abstract;
 using Test.Services.Abstract;
 using WebApi.Models;
-
+using Microsoft.AspNetCore.Identity;
 namespace Test.Services.Implementation;
 
 public class UserService: IUserService
 {
     private readonly IUserRepository _userRepository;
-    private const string jwtSecret = "naaaaaaaaaaaaaidneeee super secret key";
-    public UserService(IUserRepository userRepository)
+    private readonly string jwtSecret;
+    public UserService(IUserRepository userRepository, IConfiguration configuration)
     {
         _userRepository = userRepository;
+        jwtSecret = configuration["JWT:Secret"]!;
     }
 
     public async Task<Response> GetUsers()
@@ -40,16 +41,17 @@ public class UserService: IUserService
     public async Task<Response> AddUser(UserWriteDTO userWriteDTO)
     {
         var user = userWriteDTO.ToUser();
-        await _userRepository.AddUser(user, userWriteDTO.Password);
+        user.passwordHash = BCrypt.Net.BCrypt.HashPassword(userWriteDTO.Password);
+        await _userRepository.AddUser(user);
         var token = GenerateJWT(user);
         return new Response(true, "User added successfully", new { user, token });
-
     }
     public async Task<Response> Login(UserLoginDTO userloginDTO)
     {
-        var user = await _userRepository.Login(userloginDTO.Username, userloginDTO.Password);
-        if (user == null)
+        var user = await _userRepository.GetUserByUsername(userloginDTO.Username);
+        if (user == null || !BCrypt.Net.BCrypt.Verify(userloginDTO.Password, user.passwordHash))
             return new Response(false, "Invalid username or password");
+
         var token = GenerateJWT(user);
         return new Response(true, "Login successful", new { user, token });
     }

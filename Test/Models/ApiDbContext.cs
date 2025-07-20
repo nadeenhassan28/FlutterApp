@@ -11,6 +11,17 @@ namespace Test.Models
         }
 
         public DbSet<User> Users { get; set; }
+
+        public DbSet<UserTask> UserTasks { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.UserTasks)
+                .WithOne(ut => ut.User)
+                .HasForeignKey(ut => ut.userId);
+            base.OnModelCreating(modelBuilder);
+        }
     }
 
 }

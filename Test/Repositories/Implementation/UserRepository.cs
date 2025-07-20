@@ -43,22 +43,16 @@ public class UserRepository : IUserRepository
 
     }
 
-    public async Task AddUser(User user,string password)
+    public async Task AddUser(User user)
     {
-        user.passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
         await _db.Users.AddAsync(user);
         await _db.SaveChangesAsync();
 
     }
 
-    public async Task<User?> Login(string username,string password)
+    public async Task<User?> GetUserByUsername(string username)
     {
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.username == username);
-        if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.passwordHash))
-        {
-            return null; 
-        }
-        return user;                                                               
+        return await _db.Users.FirstOrDefaultAsync(u => u.username == username);
     }
-        
+
 }                           

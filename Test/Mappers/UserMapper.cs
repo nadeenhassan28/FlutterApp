@@ -13,7 +13,7 @@ public static class UserMapper
             lastname = userWriteDTO.Lastname,
             address = userWriteDTO.Address,
             username = userWriteDTO.Username,
-
+            passwordHash  = userWriteDTO.Password
         };
     }
 }

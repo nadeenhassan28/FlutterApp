@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,7 @@ namespace Test.Controllers
         }
 
         // GET: api/Users
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
@@ -41,6 +43,7 @@ namespace Test.Controllers
         }
 
         // GET: api/Users/5
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUsers(int id)
         {
@@ -56,6 +59,7 @@ namespace Test.Controllers
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPut("update")]
         public async Task<IActionResult> PutUsers(User user)
         {
@@ -82,6 +86,7 @@ namespace Test.Controllers
         }
 
         // DELETE: api/Users/5
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUsers(int id)
         {
@@ -98,7 +103,7 @@ namespace Test.Controllers
         {
             var result = await _userService.Login(loginDto);
             if (!result.Success)
-                return Unauthorized(result);
+                return NotFound(result);
 
             return Ok(result);
         }
