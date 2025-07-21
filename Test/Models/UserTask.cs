@@ -20,7 +20,7 @@ public class UserTask
 
     public DateTime Enddate { get; set; }
 
-    public int userId { get; set; }
+    public int? UserId { get; set; }
     [ForeignKey("UserId")]
     [JsonIgnore]
 

@@ -16,11 +16,6 @@ namespace Test.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.UserTasks)
-                .WithOne(ut => ut.User)
-                .HasForeignKey(ut => ut.userId);
-            base.OnModelCreating(modelBuilder);
         }
     }
 

@@ -12,4 +12,5 @@ public interface IUserService
     Task<Response> GetUsers();
     Task<Response> UpdateUser(User user);
     Task<Response> Login(UserLoginDTO loginDto);
+    Task<Response> UpdateUserImg(IFormFile img, int userId, string requestScheme, HostString requestHost);
 }

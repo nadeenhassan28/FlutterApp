@@ -13,10 +13,12 @@ namespace Test.Services.Implementation;
 
 public class UserService: IUserService
 {
+    private readonly FileService _fileService;
     private readonly IUserRepository _userRepository;
     private readonly string jwtSecret;
-    public UserService(IUserRepository userRepository, IConfiguration configuration)
+    public UserService(IUserRepository userRepository, IConfiguration configuration,FileService fileService)
     {
+        _fileService = fileService;
         _userRepository = userRepository;
         jwtSecret = configuration["JWT:Secret"]!;
     }
@@ -39,7 +41,7 @@ public class UserService: IUserService
     }
 
     public async Task<Response> AddUser(UserWriteDTO userWriteDTO)
-    {
+    {   
         var user = userWriteDTO.ToUser();
         user.passwordHash = BCrypt.Net.BCrypt.HashPassword(userWriteDTO.Password);
         await _userRepository.AddUser(user);
@@ -76,9 +78,9 @@ public class UserService: IUserService
     {
         var claims = new List<Claim>
     {
-        new Claim(ClaimTypes.NameIdentifier, user.userId.ToString()),
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
         new Claim(ClaimTypes.Name, user.firstname),
-        //new Claim(ClaimTypes.Role, user.Role.ToString())
+        new Claim(ClaimTypes.Role, user.Role.ToString())
     };
 
         var claimsIdentity = new ClaimsIdentity(claims);
@@ -90,7 +92,7 @@ public class UserService: IUserService
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = claimsIdentity,
-            Expires = DateTime.UtcNow.AddMinutes(5),
+            Expires = DateTime.UtcNow.AddDays(30),
             SigningCredentials = creds
         };
 
@@ -100,6 +102,29 @@ public class UserService: IUserService
 
         return accessTokenString;
     }
+    public async Task<Response> UpdateUserImg(IFormFile img, int userId,
+        string requestScheme, HostString requestHost)
+    {   
+        var user = await _userRepository.GetUserById(userId);
+
+        if (user == null)
+            return new Response(false, "User Not Found");
+
+        var fileResult = await _fileService.SaveImage(img, "ProfilePictures");
+        if (fileResult.Item1 == 1)
+        {
+            if (user.ImgUrl != string.Empty)
+            {
+                string lastPart = new Uri(user.ImgUrl!).AbsolutePath.TrimEnd('/').Split('/').Last();
+                _fileService.DeleteImage(lastPart, "ProfilePictures");
+            }
+            user.ImgUrl = $"{requestScheme}://{requestHost}/Uploads/ProfilePictures/{fileResult.Item2}";
+            await _userRepository.UpdateUser(user);
+            return new Response(true, user.ImgUrl);
+        }
+        return new Response(false,"Failed to update image");
+    }
+
 
 }
 

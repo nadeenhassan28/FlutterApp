@@ -30,11 +30,11 @@ namespace Test.Controllers
         }
 
         // GET: api/Users
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            var result =  await _userService.GetUsers();
+            var result = await _userService.GetUsers();
             if (!result.Success)
             {
                 return NotFound(result);
@@ -59,7 +59,7 @@ namespace Test.Controllers
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [Authorize]
+        [Authorize(Roles = "User")]
         [HttpPut("update")]
         public async Task<IActionResult> PutUsers(User user)
         {
@@ -76,8 +76,8 @@ namespace Test.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<User>> PostUsers(UserWriteDTO users)
-        {  
-           var result = await _userService.AddUser(users);
+        {
+            var result = await _userService.AddUser(users);
             if (!result.Success)
             {
                 return BadRequest(result);
@@ -86,11 +86,11 @@ namespace Test.Controllers
         }
 
         // DELETE: api/Users/5
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUsers(int id)
         {
-           var result = await _userService.DeleteUser(id);
+            var result = await _userService.DeleteUser(id);
             if (!result.Success)
             {
                 return NotFound(result);
@@ -108,6 +108,15 @@ namespace Test.Controllers
             return Ok(result);
         }
 
-
+        [HttpPut("add-image")]
+        public async Task<IActionResult> AddImage(IFormFile img, int userId)
+        {
+            var result = await _userService.UpdateUserImg(img, userId, Request.Scheme, Request.Host);
+            if (!result.Success)
+            {
+                return BadRequest(result);
+            }
+            return Ok(result);
+        }
     }
 }

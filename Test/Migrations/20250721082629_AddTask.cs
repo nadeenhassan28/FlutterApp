@@ -6,39 +6,43 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Test.Migrations
 {
     /// <inheritdoc />
-    public partial class usertask : Migration
+    public partial class AddTask : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.RenameColumn(
+                name: "userId",
+                table: "Users",
+                newName: "Id");
+
             migrationBuilder.CreateTable(
                 name: "UserTasks",
                 columns: table => new
                 {
-                    TaskId = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    TaskName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TaskDescription = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TaskStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     Startdate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Enddate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    userId = table.Column<int>(type: "int", nullable: false)
+                    UserId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserTasks", x => x.TaskId);
+                    table.PrimaryKey("PK_UserTasks", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UserTasks_Users_userId",
-                        column: x => x.userId,
+                        name: "FK_UserTasks_Users_UserId",
+                        column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "userId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserTasks_userId",
+                name: "IX_UserTasks_UserId",
                 table: "UserTasks",
-                column: "userId");
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -46,6 +50,11 @@ namespace Test.Migrations
         {
             migrationBuilder.DropTable(
                 name: "UserTasks");
+
+            migrationBuilder.RenameColumn(
+                name: "Id",
+                table: "Users",
+                newName: "userId");
         }
     }
 }
